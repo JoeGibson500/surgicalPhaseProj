@@ -1,8 +1,8 @@
 import re
 
 def clean_phase_name(phase_name):
- 
-    if not isinstance(phase_name, str):  # ignore nan values
+    
+    if not isinstance(phase_name, str):  # remove nan values 
         return ""
 
     phase = phase_name.strip().lower()

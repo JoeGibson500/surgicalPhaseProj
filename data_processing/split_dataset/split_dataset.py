@@ -1,0 +1,106 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+
+class DatasetSplitter:
+    
+    def __init__(self, metadata_path, output_folder="data/splits/", seed=None):
+        self.metadata_path = metadata_path
+        self.output_folder = output_folder
+        self.df = None
+        self.train_videos = []
+        self.val_videos = []
+        self.test_videos = []
+        self.seed = seed if seed is not None else np.random.randint(0, 10000)  # Ensures different splits each run
+        np.random.seed(self.seed)  # Set random seed
+
+    def load_metadata(self):
+        """Load metadata from CSV file."""
+        self.df = pd.read_csv(self.metadata_path)
+        print(f"Loaded metadata from {self.metadata_path}. Total frames: {len(self.df)}")
+
+    def ensure_phase_coverage(self):
+        """Ensure all phases appear in each split by randomly distributing videos with unique phases."""
+        video_phase_map = self.df.groupby("video_id")["phase"].apply(set).to_dict()
+        phase_video_map = {}
+
+        # Create a mapping of each phase to videos containing it
+        for video, phases in video_phase_map.items():
+            for phase in phases:
+                if phase not in phase_video_map:
+                    phase_video_map[phase] = []
+                phase_video_map[phase].append(video)
+
+        # Shuffle videos within each phase for random selection
+        for phase in phase_video_map:
+            np.random.shuffle(phase_video_map[phase])
+
+        assigned_videos = set()
+
+        # Assign one video per phase to each split, ensuring all phases appear
+        for phase, videos in phase_video_map.items():
+            num_videos = len(videos)
+            if num_videos >= 3:
+                self.train_videos.append(videos[0])
+                self.val_videos.append(videos[1])
+                self.test_videos.append(videos[2])
+                assigned_videos.update(videos[:3])
+            elif num_videos == 2:
+                self.train_videos.append(videos[0])
+                self.val_videos.append(videos[1])
+                self.test_videos.append(np.random.choice(videos)) 
+                assigned_videos.update(videos)
+            elif num_videos == 1:
+                self.train_videos.append(videos[0])
+                self.val_videos.append(videos[0])
+                self.test_videos.append(videos[0])
+                assigned_videos.add(videos[0])
+
+        print(f"Initial Phase Coverage Assigned. Train: {len(self.train_videos)}, Val: {len(self.val_videos)}, Test: {len(self.test_videos)}")
+
+        return assigned_videos
+
+    def balance_frame_distribution(self, assigned_videos):
+        """Distribute remaining videos while balancing frame counts, prioritizing the training set (70%)."""
+        video_frame_counts = self.df.groupby("video_id")["frame_number"].count()
+        remaining_videos = [v for v in video_frame_counts.index if v not in assigned_videos]
+
+        # Shuffle remaining videos for random selection
+        np.random.shuffle(remaining_videos)
+
+        total_videos = len(self.df["video_id"].unique())
+
+        for video in remaining_videos:
+            if len(self.train_videos) / total_videos < 0.7:
+                self.train_videos.append(video)
+            elif len(self.val_videos) / total_videos < 0.15:
+                self.val_videos.append(video)
+            else:
+                self.test_videos.append(video)
+
+        print(f"Final Split Sizes -> Train: {len(self.train_videos)}, Val: {len(self.val_videos)}, Test: {len(self.test_videos)}")
+
+    def save_splits(self):
+        """Save final train, validation, and test splits to CSV."""
+        train_df = self.df[self.df["video_id"].isin(self.train_videos)]
+        val_df = self.df[self.df["video_id"].isin(self.val_videos)]
+        test_df = self.df[self.df["video_id"].isin(self.test_videos)]
+
+        train_df.to_csv(f"{self.output_folder}/train_split.csv", index=False)
+        val_df.to_csv(f"{self.output_folder}/val_split.csv", index=False)
+        test_df.to_csv(f"{self.output_folder}/test_split.csv", index=False)
+
+        print("Final train/val/test splits saved successfully.")
+
+    def run(self):
+        """Main pipeline to execute the dataset splitting."""
+        self.load_metadata()
+        assigned_videos = self.ensure_phase_coverage()
+        self.balance_frame_distribution(assigned_videos)
+        self.save_splits()
+
+
+if __name__ == "__main__":
+    splitter = DatasetSplitter(metadata_path="data/frames/frames_metadata.csv")
+    splitter.run()
