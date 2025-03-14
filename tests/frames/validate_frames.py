@@ -61,7 +61,7 @@ def validate_frame_extraction(video_name, timestamp_file, frames_folder):
             # Check if the frame belongs to the correct phase
             found_correct_phase = False
             for i in range(len(phases)):
-                start_frame = int(start_times[i] * 30)  # Assuming 30 FPS
+                start_frame = int(start_times[i] * 30) 
                 end_frame = int(end_times[i] * 30)
 
                 if start_frame <= frame_id < end_frame:
