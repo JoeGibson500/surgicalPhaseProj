@@ -23,7 +23,6 @@ PHASE_TO_INDEX = {
 }
 
 class SurgicalPhaseDataset(Dataset):
-   
     def __init__(self, csv_file, image_dir, transform=None):
 
         self.data = pd.read_csv(csv_file)
@@ -47,8 +46,8 @@ class SurgicalPhaseDataset(Dataset):
         image = Image.open(img_path).convert("RGB")
 
         # Original Image Info
-        original_size = image.size  
-        image_mode = image.mode  
+        original_size = image.size 
+        image_mode = image.mode 
 
         # Load label
         label = self.data.iloc[idx]["phase"]
@@ -58,26 +57,6 @@ class SurgicalPhaseDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        # Extract tensor stats
-        tensor_min = image.min().item()
-        tensor_max = image.max().item()
-        tensor_mean = image.mean().item()
-        tensor_std = image.std().item()
-
-        # Print useful information
-        print(f"---- Image Information ----")
-        print(f"File Path       : {img_path}")
-        print(f"Original Size   : {original_size} (width x height)")
-        print(f"Image Mode      : {image_mode}")
-        print(f"Transformed Size: {image.shape}") 
-        print(f"Label (Int)     : {label}")
-        print(f"Label (Name)    : {label_name}")
-        print(f"Tensor Min      : {tensor_min:.4f}")
-        print(f"Tensor Max      : {tensor_max:.4f}")
-        print(f"Tensor Mean     : {tensor_mean:.4f}")
-        print(f"Tensor Std      : {tensor_std:.4f}")
-        print(f"--------------------------\n")
-
         return image, torch.tensor(label, dtype=torch.long)
 
 
@@ -85,14 +64,6 @@ class SurgicalPhaseDataset(Dataset):
 train_transforms = transforms.Compose([
     transforms.Resize((224, 224)),  
     transforms.RandomHorizontalFlip(),  
-    transforms.ToTensor(),  
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  
+    transforms.ToTensor(), 
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize (ImageNet values)
 ])
-
-if __name__ == "__main__":
-    dataset = SurgicalPhaseDataset(csv_file="data/splits/train_split.csv", 
-                                   image_dir="/vol/scratch/SoC/misc/2024/sc22jg/frames/",
-                                   transform=train_transforms)
-
-    image, label = dataset[0]
-    print(f"Image shape: {image.shape}, Label: {label}")

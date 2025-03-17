@@ -1,5 +1,6 @@
 import os
 import cv2
+import pandas as pd
 
 def check_frame_integrity(frames_folder):
     """
@@ -23,14 +24,12 @@ def check_frame_integrity(frames_folder):
                 corrupt_files.append(frame_path)
 
     if corrupt_files:
-        print("\nCorrupt Frame Files Found:")
+        print("Corrupt Frame Files Found:\n")
         for file in corrupt_files[:10]:  # Display first 10
             print(file)
     else:
-        print("\nAll frames are valid!")
+        print("All frames are valid!\n")
 
-import os
-import pandas as pd
 
 def validate_frame_extraction(video_name, timestamp_file, frames_folder):
     """

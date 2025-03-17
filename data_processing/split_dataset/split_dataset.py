@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 class DatasetSplitter:
     
@@ -18,7 +20,7 @@ class DatasetSplitter:
     def load_metadata(self):
         """Load metadata from CSV file."""
         self.df = pd.read_csv(self.metadata_path)
-        print(f"Loaded metadata from {self.metadata_path}. Total frames: {len(self.df)}")
+        logging.info(f"Loaded metadata from {self.metadata_path}. Total frames: {len(self.df)}")
 
     def ensure_phase_coverage(self):
         """Ensure all phases appear in each split by randomly distributing videos with unique phases."""
@@ -49,7 +51,7 @@ class DatasetSplitter:
             elif num_videos == 2:
                 self.train_videos.append(videos[0])
                 self.val_videos.append(videos[1])
-                self.test_videos.append(np.random.choice(videos)) 
+                self.test_videos.append(np.random.choice(videos))  # Random duplicate
                 assigned_videos.update(videos)
             elif num_videos == 1:
                 self.train_videos.append(videos[0])
@@ -57,7 +59,7 @@ class DatasetSplitter:
                 self.test_videos.append(videos[0])
                 assigned_videos.add(videos[0])
 
-        print(f"Initial Phase Coverage Assigned. Train: {len(self.train_videos)}, Val: {len(self.val_videos)}, Test: {len(self.test_videos)}")
+        logging.info(f"Initial Phase Coverage Assigned. Train: {len(self.train_videos)}, Val: {len(self.val_videos)}, Test: {len(self.test_videos)}")
 
         return assigned_videos
 
@@ -79,7 +81,7 @@ class DatasetSplitter:
             else:
                 self.test_videos.append(video)
 
-        print(f"Final Split Sizes -> Train: {len(self.train_videos)}, Val: {len(self.val_videos)}, Test: {len(self.test_videos)}")
+        logging.info(f"Final Split Sizes -> Train: {len(self.train_videos)}, Val: {len(self.val_videos)}, Test: {len(self.test_videos)}")
 
     def save_splits(self):
         """Save final train, validation, and test splits to CSV."""
@@ -91,7 +93,7 @@ class DatasetSplitter:
         val_df.to_csv(f"{self.output_folder}/val_split.csv", index=False)
         test_df.to_csv(f"{self.output_folder}/test_split.csv", index=False)
 
-        print("Final train/val/test splits saved successfully.")
+        logging.info("Final train/val/test splits saved successfully.")
 
     def run(self):
         """Main pipeline to execute the dataset splitting."""

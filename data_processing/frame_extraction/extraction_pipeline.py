@@ -1,7 +1,7 @@
 import argparse
 from extract_frames import FrameExtractionManager
 from extract_frames import FrameExtractor
-from extract_metadata import MetadataGenerator
+from extract_metadata import FrameMetadataGenerator
 import logging
 
 
@@ -42,8 +42,8 @@ def run_extraction_pipeline():
     # Step 2: Generate Metadata CSV 
     if args.generate_metadata:
         print("Generating Metadata CSV...\n")
-        metadata_generator = MetadataGenerator(frame_folder=args.output_folder)
-        metadata_generator.generate_metadata()
+        frame_metadata_generator = FrameMetadataGenerator(frame_folder=args.output_folder)
+        frame_metadata_generator.generate_metadata()
         print("Metadata CSV Generated.\n")
         
         

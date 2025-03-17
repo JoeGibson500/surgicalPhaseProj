@@ -4,7 +4,7 @@ import glob
 import logging
 
 
-class MetadataGenerator:
+class FrameMetadataGenerator:
     
     def __init__(self, frame_folder, output_csv="data/frames/frames_metadata.csv"):
         self.frame_folder = frame_folder
