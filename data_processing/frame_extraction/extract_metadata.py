@@ -1,10 +1,11 @@
-import os
+ import os
 import pandas as pd
 import glob
 import logging
 
+logging.basicConfig(level=print)
 
-class FrameMetadataGenerator:
+class MetadataGenerator:
     
     def __init__(self, frame_folder, output_csv="data/frames/frames_metadata.csv"):
         self.frame_folder = frame_folder

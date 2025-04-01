@@ -51,7 +51,7 @@ class DatasetSplitter:
             elif num_videos == 2:
                 self.train_videos.append(videos[0])
                 self.val_videos.append(videos[1])
-                self.test_videos.append(np.random.choice(videos))  # Random duplicate
+                self.test_videos.append(np.random.choice(videos))
                 assigned_videos.update(videos)
             elif num_videos == 1:
                 self.train_videos.append(videos[0])

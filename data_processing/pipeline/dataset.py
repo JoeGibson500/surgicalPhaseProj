@@ -1,31 +1,22 @@
 import os
 import pandas as pd
 import torch
+import sys
 from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+from utils.phase_utils import get_phase_to_index, clean_phase_name
+
 # Manual phase-to-index mapping
-PHASE_TO_INDEX = {
-    "unknown": 0,
-    "pull through": 1,
-    "placing rings": 2,
-    "suture pick up": 3,
-    "suture pull through": 4,
-    "suture tie": 5,
-    "uva pick up": 6,
-    "uva pull through": 7,
-    "uva tie": 8,
-    "placing rings 2 arms": 9,
-    "1 arm placing": 10,
-    "2 arms placing": 11,
-    "pull off": 12
-}
+PHASE_TO_INDEX = get_phase_to_index()
+
 
 class SurgicalPhaseDataset(Dataset):
-    def __init__(self, csv_file, image_dir, transform=None):
+    def __init__(self, data_split, image_dir, transform=None):
 
-        self.data = pd.read_csv(csv_file)
+        self.data = pd.read_csv(data_split)
         self.image_dir = image_dir
         self.transform = transform
 
@@ -46,12 +37,12 @@ class SurgicalPhaseDataset(Dataset):
         image = Image.open(img_path).convert("RGB")
 
         # Original Image Info
-        original_size = image.size 
+        original_size = image.size  # (width, height)
         image_mode = image.mode 
 
         # Load label
         label = self.data.iloc[idx]["phase"]
-        label_name = [key for key, value in PHASE_TO_INDEX.items() if value == label][0] 
+        label_name = [key for key, value in PHASE_TO_INDEX.items() if value == label][0]  # Reverse lookup for name
 
         # Apply transformations
         if self.transform:
@@ -62,8 +53,8 @@ class SurgicalPhaseDataset(Dataset):
 
 # Define transforms
 train_transforms = transforms.Compose([
-    transforms.Resize((224, 224)),  
-    transforms.RandomHorizontalFlip(),  
-    transforms.ToTensor(), 
+    transforms.Resize((224, 224)),  # Resize images
+    transforms.RandomHorizontalFlip(),  # Data augmentation
+    transforms.ToTensor(),  # Convert image to tensor
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize (ImageNet values)
 ])
